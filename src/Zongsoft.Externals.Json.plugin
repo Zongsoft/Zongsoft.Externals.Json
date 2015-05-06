@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<plugin name="Zongsoft.Externals.Json"
+        title="Zongsoft.Externals.Json Plugin"
+        author="Zongsoft Corporation"
+        version="1.0"
+        description="Create by: Popeye Zhong at 2015-05-06" >
+
+	<manifest>
+		<assemblies>
+			<assembly name="Zongsoft.Externals.Json" />
+		</assemblies>
+	</manifest>
+
+	<!-- 定义Json序列化器对象 -->
+	<extension path="/Workspace/Externals">
+		<object name="Json" value="{static:Zongsoft.Externals.Json.JsonSerializer.Default, Zongsoft.Externals.Json}" />
+	</extension>
+
+	<!-- 将Json序列化器挂载到默认服务容器中 -->
+	<extension path="/Workspace/Services">
+		<object name="Json" value="{path:/Workspace/Externals/Json}" />
+	</extension>
+</plugin>
