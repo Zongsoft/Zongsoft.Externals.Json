@@ -26,6 +26,7 @@
 
 using System;
 using System.IO;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Text;
 
@@ -39,20 +40,36 @@ namespace Zongsoft.Externals.Json
 
 		#region 成员字段
 		private Newtonsoft.Json.JsonSerializer _serializer;
+		private JsonSerializerSettings _settings;
 		#endregion
 
 		#region 构造函数
-		public JsonSerializer()
+		public JsonSerializer() : this(null)
 		{
+		}
+
+		public JsonSerializer(JsonSerializerSettings settings)
+		{
+			_settings = settings ?? JsonSerializerSettings.Default;
+
 			_serializer = Newtonsoft.Json.JsonSerializer.Create(new Newtonsoft.Json.JsonSerializerSettings()
 			{
-#if DEBUG
-				Formatting = Newtonsoft.Json.Formatting.Indented,
-#else
-				Formatting = Newtonsoft.Json.Formatting.None,
-#endif
-				ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize,
+				Formatting = _settings.Formatting,
+				ReferenceLoopHandling = _settings.ReferenceLoopHandling,
+				ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver(),
 			});
+
+			_settings.PropertyChanged += Settings_PropertyChanged;
+		}
+		#endregion
+
+		#region 公共属性
+		public JsonSerializerSettings Settings
+		{
+			get
+			{
+				return _settings;
+			}
 		}
 		#endregion
 
@@ -126,7 +143,30 @@ namespace Zongsoft.Externals.Json
 		}
 		#endregion
 
+		#region 设置变更
+		private void Settings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			switch(e.PropertyName)
+			{
+				case "Formatting":
+					_serializer.Formatting = ((JsonSerializerSettings)sender).Formatting;
+					break;
+				case "ReferenceLoopHandling":
+					_serializer.ReferenceLoopHandling = ((JsonSerializerSettings)sender).ReferenceLoopHandling;
+					break;
+			}
+		}
+		#endregion
+
 		#region 显式实现
+		Zongsoft.Runtime.Serialization.SerializerSettings Zongsoft.Runtime.Serialization.ISerializer.Settings
+		{
+			get
+			{
+				return this.Settings;
+			}
+		}
+
 		object Zongsoft.Runtime.Serialization.ISerializer.Deserialize(Stream serializationStream)
 		{
 			throw new NotSupportedException();

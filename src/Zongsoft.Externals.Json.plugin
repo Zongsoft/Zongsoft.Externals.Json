@@ -13,12 +13,14 @@
 	</manifest>
 
 	<!-- 定义Json序列化器对象 -->
-	<extension path="/Workspace/Externals">
-		<object name="Json" value="{static:Zongsoft.Externals.Json.JsonSerializer.Default, Zongsoft.Externals.Json}" />
+	<extension path="/Workbench/Runtime/Serialization">
+		<object name="Json" value="{static:Zongsoft.Externals.Json.JsonSerializer.Default, Zongsoft.Externals.Json}">
+			<object.property name="Json" type="Zongsoft.Runtime.Serialization.Serializer, Zongsoft.CoreLibrary" value="{path:.}" />
+		</object>
 	</extension>
 
 	<!-- 将Json序列化器挂载到默认服务容器中 -->
 	<extension path="/Workspace/Services">
-		<object name="Json" value="{path:/Workspace/Externals/Json}" />
+		<object name="Json" value="{path:/Workbench/Runtime/Serialization/Json}" />
 	</extension>
 </plugin>
