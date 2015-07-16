@@ -44,12 +44,7 @@ namespace Zongsoft.Externals.Json
 		#region 构造函数
 		public JsonSerializerSettings()
 		{
-#if DEBUG
-			_formatting = Newtonsoft.Json.Formatting.Indented;
-#else
 			_formatting = Newtonsoft.Json.Formatting.None;
-#endif
-
 			_referenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Serialize;
 		}
 		#endregion
