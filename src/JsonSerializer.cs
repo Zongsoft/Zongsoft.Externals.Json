@@ -141,6 +141,22 @@ namespace Zongsoft.Externals.Json
 
 			return _serializer.Deserialize(reader, type);
 		}
+
+		public T Deserialize<T>(string text)
+		{
+			return (T)this.Deserialize(text, typeof(T));
+		}
+
+		public object Deserialize(string text, Type type)
+		{
+			if(string.IsNullOrWhiteSpace(text))
+				return null;
+
+			using(var reader = new StringReader(text))
+			{
+				return _serializer.Deserialize(reader, type);
+			}
+		}
 		#endregion
 
 		#region 设置变更
@@ -173,6 +189,11 @@ namespace Zongsoft.Externals.Json
 		}
 
 		object Zongsoft.Runtime.Serialization.ITextSerializer.Deserialize(TextReader reader)
+		{
+			throw new NotSupportedException();
+		}
+
+		object Zongsoft.Runtime.Serialization.ITextSerializer.Deserialize(string text)
 		{
 			throw new NotSupportedException();
 		}
