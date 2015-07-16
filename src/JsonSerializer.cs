@@ -30,6 +30,11 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Text;
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+
+using Zongsoft.Runtime.Serialization;
+
 namespace Zongsoft.Externals.Json
 {
 	public class JsonSerializer : Zongsoft.Runtime.Serialization.ISerializer, Zongsoft.Runtime.Serialization.ITextSerializer
@@ -39,8 +44,7 @@ namespace Zongsoft.Externals.Json
 		#endregion
 
 		#region 成员字段
-		private Newtonsoft.Json.JsonSerializer _serializer;
-		private JsonSerializerSettings _settings;
+		private Zongsoft.Runtime.Serialization.TextSerializationSettings _settings;
 		#endregion
 
 		#region 构造函数
@@ -48,23 +52,14 @@ namespace Zongsoft.Externals.Json
 		{
 		}
 
-		public JsonSerializer(JsonSerializerSettings settings)
+		public JsonSerializer(Zongsoft.Runtime.Serialization.TextSerializationSettings settings)
 		{
-			_settings = settings ?? JsonSerializerSettings.Default;
-
-			_serializer = Newtonsoft.Json.JsonSerializer.Create(new Newtonsoft.Json.JsonSerializerSettings()
-			{
-				Formatting = _settings.Formatting,
-				ReferenceLoopHandling = _settings.ReferenceLoopHandling,
-				ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver(),
-			});
-
-			_settings.PropertyChanged += Settings_PropertyChanged;
+			_settings = settings ?? new Zongsoft.Runtime.Serialization.TextSerializationSettings();
 		}
 		#endregion
 
 		#region 公共属性
-		public JsonSerializerSettings Settings
+		public Zongsoft.Runtime.Serialization.TextSerializationSettings Settings
 		{
 			get
 			{
@@ -74,21 +69,15 @@ namespace Zongsoft.Externals.Json
 		#endregion
 
 		#region 公共方法
-		public string Serialize(object graph)
+		public string Serialize(object graph, TextSerializationSettings settings = null)
 		{
 			if(graph == null)
 				return null;
 
-			var text = new StringBuilder();
-
-			using(var writer = new StringWriter(text))
-			{
-				_serializer.Serialize(writer, graph);
-				return text.ToString();
-			}
+			return Newtonsoft.Json.JsonConvert.SerializeObject(graph, this.GetSerializerSettings(settings ?? _settings));
 		}
 
-		public void Serialize(Stream serializationStream, object graph)
+		public void Serialize(Stream serializationStream, object graph, SerializationSettings settings = null)
 		{
 			if(serializationStream == null)
 				throw new ArgumentNullException("serializationStream");
@@ -98,11 +87,12 @@ namespace Zongsoft.Externals.Json
 
 			using(var writer = new StreamWriter(serializationStream, Encoding.UTF8))
 			{
-				_serializer.Serialize(writer, graph);
+				var serializer = this.GetSerializer(settings);
+				serializer.Serialize(writer, graph);
 			}
 		}
 
-		public void Serialize(TextWriter writer, object graph)
+		public void Serialize(TextWriter writer, object graph, TextSerializationSettings settings = null)
 		{
 			if(writer == null)
 				throw new ArgumentNullException("writer");
@@ -110,7 +100,8 @@ namespace Zongsoft.Externals.Json
 			if(graph == null)
 				return;
 
-			_serializer.Serialize(writer, graph);
+			var serializer = this.GetSerializer(settings);
+			serializer.Serialize(writer, graph);
 		}
 
 		public T Deserialize<T>(Stream serializationStream)
@@ -125,7 +116,8 @@ namespace Zongsoft.Externals.Json
 
 			using(var reader = new StreamReader(serializationStream, Encoding.UTF8))
 			{
-				return _serializer.Deserialize(reader, type);
+				var serializer = this.GetSerializer(_settings);
+				return serializer.Deserialize(reader, type);
 			}
 		}
 
@@ -139,7 +131,8 @@ namespace Zongsoft.Externals.Json
 			if(reader == null)
 				throw new ArgumentNullException("reader");
 
-			return _serializer.Deserialize(reader, type);
+			var serializer = this.GetSerializer(_settings);
+			return serializer.Deserialize(reader, type);
 		}
 
 		public T Deserialize<T>(string text)
@@ -154,28 +147,43 @@ namespace Zongsoft.Externals.Json
 
 			using(var reader = new StringReader(text))
 			{
-				return _serializer.Deserialize(reader, type);
+				var serializer = this.GetSerializer(_settings);
+				return serializer.Deserialize(reader, type);
 			}
 		}
 		#endregion
 
-		#region 设置变更
-		private void Settings_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		#region 私有方法
+		private Newtonsoft.Json.JsonSerializerSettings GetSerializerSettings(Zongsoft.Runtime.Serialization.TextSerializationSettings settings)
 		{
-			switch(e.PropertyName)
+			var result = new Newtonsoft.Json.JsonSerializerSettings()
 			{
-				case "Formatting":
-					_serializer.Formatting = ((JsonSerializerSettings)sender).Formatting;
-					break;
-				case "ReferenceLoopHandling":
-					_serializer.ReferenceLoopHandling = ((JsonSerializerSettings)sender).ReferenceLoopHandling;
-					break;
-			}
+				Formatting = Formatting.None,
+				ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+			};
+
+			if(settings == null)
+				return result;
+
+			result.Formatting = settings.IsIndented ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
+
+			if(settings.NamingConvention == Zongsoft.Runtime.Serialization.SerializationNamingConvention.Camel)
+				result.ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver();
+			else
+				result.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
+
+			return result;
+		}
+
+		private Newtonsoft.Json.JsonSerializer GetSerializer(Zongsoft.Runtime.Serialization.SerializationSettings settings)
+		{
+			var jsonSettings = this.GetSerializerSettings(settings as TextSerializationSettings ?? _settings);
+			return Newtonsoft.Json.JsonSerializer.Create(jsonSettings);
 		}
 		#endregion
 
 		#region 显式实现
-		Zongsoft.Runtime.Serialization.SerializerSettings Zongsoft.Runtime.Serialization.ISerializer.Settings
+		Zongsoft.Runtime.Serialization.SerializationSettings Zongsoft.Runtime.Serialization.ISerializer.Settings
 		{
 			get
 			{
