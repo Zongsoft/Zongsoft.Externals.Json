@@ -28,7 +28,7 @@ using System;
 using System.IO;
 using System.ComponentModel;
 using System.Collections.Generic;
-using System.Text;
+using System.Reflection;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -85,7 +85,7 @@ namespace Zongsoft.Externals.Json
 			if(graph == null)
 				return;
 
-			using(var writer = new StreamWriter(serializationStream, Encoding.UTF8))
+			using(var writer = new StreamWriter(serializationStream, System.Text.Encoding.UTF8))
 			{
 				var serializer = this.GetSerializer(settings);
 				serializer.Serialize(writer, graph);
@@ -114,7 +114,7 @@ namespace Zongsoft.Externals.Json
 			if(serializationStream == null)
 				throw new ArgumentNullException("serializationStream");
 
-			using(var reader = new StreamReader(serializationStream, Encoding.UTF8))
+			using(var reader = new StreamReader(serializationStream, System.Text.Encoding.UTF8))
 			{
 				var serializer = this.GetSerializer(_settings);
 				return serializer.Deserialize(reader, type);
@@ -160,6 +160,8 @@ namespace Zongsoft.Externals.Json
 			{
 				Formatting = Formatting.None,
 				ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+				DefaultValueHandling = DefaultValueHandling.Ignore,
+				ContractResolver = new MyJsonContractResolver(),
 			};
 
 			if(settings == null)
@@ -193,17 +195,85 @@ namespace Zongsoft.Externals.Json
 
 		object Zongsoft.Runtime.Serialization.ISerializer.Deserialize(Stream serializationStream)
 		{
-			throw new NotSupportedException();
+			if(serializationStream == null)
+				return null;
+
+			using(var reader = new StreamReader(serializationStream))
+			{
+				return JsonConvert.DeserializeObject(reader.ReadToEnd());
+			}
 		}
 
 		object Zongsoft.Runtime.Serialization.ITextSerializer.Deserialize(TextReader reader)
 		{
-			throw new NotSupportedException();
+			if(reader == null)
+				return null;
+
+			return JsonConvert.DeserializeObject(reader.ReadToEnd());
 		}
 
 		object Zongsoft.Runtime.Serialization.ITextSerializer.Deserialize(string text)
 		{
-			throw new NotSupportedException();
+			return JsonConvert.DeserializeObject(text);
+		}
+		#endregion
+
+		#region 嵌套子类
+		private class MyJsonContractResolver : Newtonsoft.Json.Serialization.DefaultContractResolver
+		{
+			protected override JsonObjectContract CreateObjectContract(Type objectType)
+			{
+				var contract = base.CreateObjectContract(objectType);
+
+				this.SetObjectCreator(contract);
+
+				return contract;
+			}
+
+			private void SetObjectCreator(JsonObjectContract contract)
+			{
+				var constructors = contract.CreatedType.GetConstructors();
+
+				foreach(var constructor in constructors)
+				{
+					var parameters = constructor.GetParameters();
+
+					foreach(var parameter in parameters)
+					{
+						var property = contract.Properties.GetProperty(parameter.Name, StringComparison.OrdinalIgnoreCase);
+
+						if(property == null)
+							break;
+
+						contract.CreatorParameters.AddProperty(property);
+					}
+
+					if(parameters.Length != contract.CreatorParameters.Count)
+					{
+						contract.CreatorParameters.Clear();
+					}
+					else
+					{
+						contract.OverrideCreator = new ObjectCreator(constructor).CreateObject;
+						break;
+					}
+				}
+			}
+
+			private class ObjectCreator
+			{
+				private ConstructorInfo _constructor;
+
+				public ObjectCreator(ConstructorInfo constructor)
+				{
+					_constructor = constructor;
+				}
+
+				public object CreateObject(object[] parameters)
+				{
+					return _constructor.Invoke(parameters);
+				}
+			}
 		}
 		#endregion
 	}
