@@ -102,7 +102,7 @@ namespace Zongsoft.Externals.Json.Tests
 				set;
 			}
 
-			[SerializationMember(SerializationMemberBehavior.Ignore)]
+			[SerializationMember(SerializationMemberBehavior.Ignored)]
 			public int TotalPoints
 			{
 				get;

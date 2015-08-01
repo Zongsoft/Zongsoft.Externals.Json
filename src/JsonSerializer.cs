@@ -244,7 +244,7 @@ namespace Zongsoft.Externals.Json
 					if(attributes != null && attributes.Count > 0)
 					{
 						var behavior = ((Zongsoft.Runtime.Serialization.SerializationMemberAttribute)attributes[0]).Behavior;
-						property.Ignored = (behavior == SerializationMemberBehavior.Ignore);
+						property.Ignored = (behavior == SerializationMemberBehavior.Ignored);
 						property.Required = (behavior == SerializationMemberBehavior.Required) ? Required.Always : Required.Default;
 					}
 				}
