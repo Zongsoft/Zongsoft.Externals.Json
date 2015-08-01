@@ -161,18 +161,14 @@ namespace Zongsoft.Externals.Json
 				Formatting = Formatting.None,
 				ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
 				DefaultValueHandling = DefaultValueHandling.Ignore,
-				ContractResolver = new MyJsonContractResolver(),
+				TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Objects,
+				ContractResolver = new MyJsonContractResolver((settings == null ? SerializationNamingConvention.None : settings.NamingConvention)),
 			};
 
-			if(settings == null)
-				return result;
-
-			result.Formatting = settings.IsIndented ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
-
-			if(settings.NamingConvention == Zongsoft.Runtime.Serialization.SerializationNamingConvention.Camel)
-				result.ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver();
-			else
-				result.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
+			if(settings != null)
+			{
+				result.Formatting = settings.Indented ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
+			}
 
 			return result;
 		}
@@ -221,6 +217,13 @@ namespace Zongsoft.Externals.Json
 		#region 嵌套子类
 		private class MyJsonContractResolver : Newtonsoft.Json.Serialization.DefaultContractResolver
 		{
+			private SerializationNamingConvention _namingConvention;
+
+			public MyJsonContractResolver(SerializationNamingConvention namingConvention)
+			{
+				_namingConvention = namingConvention;
+			}
+
 			protected override JsonObjectContract CreateObjectContract(Type objectType)
 			{
 				var contract = base.CreateObjectContract(objectType);
@@ -228,6 +231,38 @@ namespace Zongsoft.Externals.Json
 				this.SetObjectCreator(contract);
 
 				return contract;
+			}
+
+			protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+			{
+				var properties = base.CreateProperties(type, memberSerialization);
+
+				foreach(var property in properties)
+				{
+					var attributes = property.AttributeProvider.GetAttributes(typeof(Zongsoft.Runtime.Serialization.SerializationMemberAttribute), true);
+
+					if(attributes != null && attributes.Count > 0)
+					{
+						var behavior = ((Zongsoft.Runtime.Serialization.SerializationMemberAttribute)attributes[0]).Behavior;
+						property.Ignored = (behavior == SerializationMemberBehavior.Ignore);
+						property.Required = (behavior == SerializationMemberBehavior.Required) ? Required.Always : Required.Default;
+					}
+				}
+
+				return properties;
+			}
+
+			protected override string ResolvePropertyName(string propertyName)
+			{
+				switch(_namingConvention)
+				{
+					case SerializationNamingConvention.Camel:
+						return ToNamingCase(propertyName, true);
+					case SerializationNamingConvention.Pascal:
+						return ToNamingCase(propertyName, false);
+					default:
+						return base.ResolvePropertyName(propertyName);
+				}
 			}
 
 			private void SetObjectCreator(JsonObjectContract contract)
@@ -258,6 +293,51 @@ namespace Zongsoft.Externals.Json
 						break;
 					}
 				}
+			}
+
+			private string ToNamingCase(string name, bool toLower)
+			{
+				if(string.IsNullOrEmpty(name))
+					return name;
+
+				if(toLower)
+				{
+					if(!char.IsUpper(name[0]))
+						return name;
+				}
+				else
+				{
+					if(!char.IsLower(name[0]))
+						return name;
+				}
+
+				char[] chars = name.ToCharArray();
+
+				for(int i = 0; i < chars.Length; i++)
+				{
+					bool hasNext = (i + 1 < chars.Length);
+
+					if(i > 0 && hasNext)
+					{
+						if(toLower)
+						{
+							if(!char.IsUpper(chars[i + 1]))
+								break;
+						}
+						else
+						{
+							if(!char.IsLower(chars[i + 1]))
+								break;
+						}
+					}
+
+					if(toLower)
+						chars[i] = char.ToLowerInvariant(chars[i]);
+					else
+						chars[i] = char.ToUpperInvariant(chars[i]);
+				}
+
+				return new string(chars);
 			}
 
 			private class ObjectCreator
