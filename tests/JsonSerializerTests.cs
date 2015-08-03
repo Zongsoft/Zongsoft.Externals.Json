@@ -12,7 +12,7 @@ namespace Zongsoft.Externals.Json.Tests
 {
 	public class JsonSerializerTests
 	{
-		#region 测试数据
+		#region 私有变量
 		private Zongsoft.Security.Certification _certification;
 		#endregion
 
@@ -21,13 +21,14 @@ namespace Zongsoft.Externals.Json.Tests
 		{
 			var user = new UserProfile(101, "Popeye")
 			{
+				Avatar = "/:mono:/",
 				Gender = JsonSerializerTests.Gender.Male,
 				FullName = "Popeye Zhong",
 				Email = "popeye@automao.cn",
 				PhoneNumber = "18912345678",
 				Birthdate = new DateTime(1979, 5, 15),
 				Principal = "001",
-				Grade = 10,
+				Grade = 0,
 				TotalPoints = Zongsoft.Common.RandomGenerator.GenerateInt32(),
 				Description = "我是凹凸猫的一号员工！",
 			};
@@ -84,6 +85,13 @@ namespace Zongsoft.Externals.Json.Tests
 			#endregion
 
 			#region 公共属性
+			public string Avatar
+			{
+				get;
+				set;
+			}
+
+			[SerializationMember("Sex")]
 			public Gender Gender
 			{
 				get;
@@ -96,6 +104,7 @@ namespace Zongsoft.Externals.Json.Tests
 				set;
 			}
 
+			[SerializationMember(SerializationMemberBehavior.Required)]
 			public byte Grade
 			{
 				get;

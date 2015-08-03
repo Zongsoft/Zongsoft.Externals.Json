@@ -243,9 +243,26 @@ namespace Zongsoft.Externals.Json
 
 					if(attributes != null && attributes.Count > 0)
 					{
-						var behavior = ((Zongsoft.Runtime.Serialization.SerializationMemberAttribute)attributes[0]).Behavior;
-						property.Ignored = (behavior == SerializationMemberBehavior.Ignored);
-						property.Required = (behavior == SerializationMemberBehavior.Required) ? Required.Always : Required.Default;
+						var attribute = (Zongsoft.Runtime.Serialization.SerializationMemberAttribute)attributes[0];
+
+						if(!string.IsNullOrWhiteSpace(attribute.Name))
+						{
+							switch(_namingConvention)
+							{
+								case SerializationNamingConvention.Camel:
+									property.PropertyName = ToNamingCase(attribute.Name, true);
+									break;
+								case SerializationNamingConvention.Pascal:
+									property.PropertyName = ToNamingCase(attribute.Name, false);
+									break;
+								default:
+									property.PropertyName = attribute.Name;
+									break;
+							}
+						}
+
+						property.Ignored = (attribute.Behavior == SerializationMemberBehavior.Ignored);
+						property.Required = (attribute.Behavior == SerializationMemberBehavior.Required) ? Required.AllowNull : Required.Default;
 					}
 				}
 
