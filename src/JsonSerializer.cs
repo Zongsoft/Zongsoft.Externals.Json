@@ -284,6 +284,9 @@ namespace Zongsoft.Externals.Json
 
 			private void SetObjectCreator(JsonObjectContract contract)
 			{
+				if(contract.CreatorParameters.Count > 0)
+					return;
+
 				var constructors = contract.CreatedType.GetConstructors();
 
 				foreach(var constructor in constructors)

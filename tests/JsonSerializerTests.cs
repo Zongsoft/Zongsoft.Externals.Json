@@ -46,7 +46,24 @@ namespace Zongsoft.Externals.Json.Tests
 		public void SerializeTest()
 		{
 			JsonSerializer.Default.Settings.Indented = true;
-			var text = JsonSerializer.Default.Serialize(_certification);
+
+			var text = JsonSerializer.Default.Serialize(new
+			{
+				Avatar = "/:mono:/",
+				Gender = JsonSerializerTests.Gender.Male,
+				FullName = "Popeye Zhong",
+				Email = "popeye@automao.cn",
+				PhoneNumber = "18912345678",
+				Birthdate = new DateTime(1979, 5, 15),
+				Principal = "001",
+				Grade = 0,
+				TotalPoints = Zongsoft.Common.RandomGenerator.GenerateInt32(),
+				Description = "我是凹凸猫的一号员工！",
+			});
+
+			Assert.NotNull(text);
+
+			text = JsonSerializer.Default.Serialize(_certification);
 
 			Assert.NotNull(text);
 
