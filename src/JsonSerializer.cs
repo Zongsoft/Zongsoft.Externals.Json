@@ -161,7 +161,7 @@ namespace Zongsoft.Externals.Json
 				Formatting = Formatting.None,
 				ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
 				DefaultValueHandling = DefaultValueHandling.Ignore,
-				TypeNameHandling = Newtonsoft.Json.TypeNameHandling.Objects,
+				TypeNameHandling = settings.Typed ? Newtonsoft.Json.TypeNameHandling.Objects : TypeNameHandling.None,
 				ContractResolver = new MyJsonContractResolver((settings == null ? SerializationNamingConvention.None : settings.NamingConvention)),
 			};
 
