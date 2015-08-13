@@ -117,6 +117,7 @@ namespace Zongsoft.Externals.Json
 			using(var reader = new StreamReader(serializationStream, System.Text.Encoding.UTF8))
 			{
 				var serializer = this.GetSerializer(_settings);
+				serializer.TypeNameHandling = TypeNameHandling.Objects;
 				return serializer.Deserialize(reader, type);
 			}
 		}
@@ -132,6 +133,7 @@ namespace Zongsoft.Externals.Json
 				throw new ArgumentNullException("reader");
 
 			var serializer = this.GetSerializer(_settings);
+			serializer.TypeNameHandling = TypeNameHandling.Objects;
 			return serializer.Deserialize(reader, type);
 		}
 
@@ -148,6 +150,7 @@ namespace Zongsoft.Externals.Json
 			using(var reader = new StringReader(text))
 			{
 				var serializer = this.GetSerializer(_settings);
+				serializer.TypeNameHandling = TypeNameHandling.Objects;
 				return serializer.Deserialize(reader, type);
 			}
 		}
