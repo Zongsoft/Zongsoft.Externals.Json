@@ -160,14 +160,16 @@ namespace Zongsoft.Externals.Json
 			{
 				Formatting = Formatting.None,
 				ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
-				DefaultValueHandling = DefaultValueHandling.Ignore,
-				TypeNameHandling = settings.Typed ? Newtonsoft.Json.TypeNameHandling.Objects : TypeNameHandling.None,
+				TypeNameHandling = (settings != null && settings.Typed) ? Newtonsoft.Json.TypeNameHandling.Objects : TypeNameHandling.None,
 				ContractResolver = new MyJsonContractResolver((settings == null ? SerializationNamingConvention.None : settings.NamingConvention)),
 			};
 
 			if(settings != null)
 			{
 				result.Formatting = settings.Indented ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
+
+				if((settings.SerializationBehavior & SerializationBehavior.IgnoreDefaultValue) == SerializationBehavior.IgnoreDefaultValue)
+					result.DefaultValueHandling = DefaultValueHandling.Ignore;
 			}
 
 			return result;
