@@ -162,7 +162,7 @@ namespace Zongsoft.Externals.Json
 			var result = new Newtonsoft.Json.JsonSerializerSettings()
 			{
 				Formatting = Formatting.None,
-				ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
 				TypeNameHandling = (settings != null && settings.Typed) ? Newtonsoft.Json.TypeNameHandling.Objects : TypeNameHandling.None,
 				ContractResolver = new MyJsonContractResolver((settings == null ? SerializationNamingConvention.None : settings.NamingConvention)),
 			};
@@ -272,6 +272,27 @@ namespace Zongsoft.Externals.Json
 				}
 
 				return properties;
+			}
+
+			protected override IValueProvider CreateMemberValueProvider(MemberInfo member)
+			{
+				var valueProvider = base.CreateMemberValueProvider(member);
+
+				return valueProvider;
+			}
+
+			public override JsonContract ResolveContract(Type type)
+			{
+				var contract = base.ResolveContract(type);
+
+				return contract;
+			}
+
+			protected override JsonConverter ResolveContractConverter(Type objectType)
+			{
+				var converter = base.ResolveContractConverter(objectType);
+
+				return converter;
 			}
 
 			protected override string ResolvePropertyName(string propertyName)
