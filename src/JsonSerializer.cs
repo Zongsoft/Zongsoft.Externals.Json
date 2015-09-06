@@ -313,7 +313,8 @@ namespace Zongsoft.Externals.Json
 				if(contract.CreatorParameters.Count > 0)
 					return;
 
-				var constructors = contract.CreatedType.GetConstructors();
+				//获取以构造函数参数的数量多少为排序依据的构造函数信息集合
+				var constructors = System.Linq.Enumerable.OrderByDescending(contract.CreatedType.GetConstructors(), info => info.GetParameters().Length);
 
 				foreach(var constructor in constructors)
 				{
