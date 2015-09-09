@@ -13,7 +13,7 @@ namespace Zongsoft.Externals.Json.Tests
 	public class JsonSerializerTests
 	{
 		#region 私有变量
-		private Zongsoft.Security.Certification _certification;
+		private Zongsoft.Security.Credential _credential;
 		#endregion
 
 		#region 构造函数
@@ -42,11 +42,11 @@ namespace Zongsoft.Externals.Json.Tests
 
 			((Employee)user.Principal).User = user;
 
-			_certification = new Security.Certification("20150801", user, "Web", TimeSpan.FromHours(2));
+			_credential = new Security.Credential("20150801", user, "Web", TimeSpan.FromHours(2));
 
-			_certification.ExtendedProperties.Add("QQ", "9555****");
-			_certification.ExtendedProperties.Add("WeChatNo", "Automao");
-			_certification.ExtendedProperties.Add("NativePlace", "湖南邵阳");
+			_credential.ExtendedProperties.Add("QQ", "9555****");
+			_credential.ExtendedProperties.Add("WeChatNo", "Automao");
+			_credential.ExtendedProperties.Add("NativePlace", "湖南邵阳");
 		}
 		#endregion
 
@@ -72,12 +72,12 @@ namespace Zongsoft.Externals.Json.Tests
 
 			Assert.NotNull(text);
 
-			text = JsonSerializer.Default.Serialize(_certification);
+			text = JsonSerializer.Default.Serialize(_credential);
 
 			Assert.NotNull(text);
 
 			JsonSerializer.Default.Settings.NamingConvention = SerializationNamingConvention.Camel;
-			text = JsonSerializer.Default.Serialize(_certification);
+			text = JsonSerializer.Default.Serialize(_credential);
 
 			Assert.NotNull(text);
 		}
@@ -87,11 +87,11 @@ namespace Zongsoft.Externals.Json.Tests
 		{
 			JsonSerializer.Default.Settings.Indented = true;
 			JsonSerializer.Default.Settings.NamingConvention = SerializationNamingConvention.Camel;
-			var text = JsonSerializer.Default.Serialize(_certification);
+			var text = JsonSerializer.Default.Serialize(_credential);
 
 			Assert.NotNull(text);
 
-			var certification = JsonSerializer.Default.Deserialize<Zongsoft.Security.Certification>(text);
+			var certification = JsonSerializer.Default.Deserialize<Zongsoft.Security.Credential>(text);
 
 			Assert.NotNull(certification);
 		}
