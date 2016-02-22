@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Zongsoft.Externals.Json")]
-[assembly: AssemblyDescription("Zongsoft Externals Json Library")]
+[assembly: AssemblyDescription("This is a library about JSON serialization based Newtonsoft.Json.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Zongsoft Corporation")]
 [assembly: AssemblyProduct("Zongsoft.Externals.Json Library")]
@@ -12,5 +12,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 
-[assembly: AssemblyVersion("1.0.1505.*")]
+[assembly: AssemblyVersion("1.0.1505.0")]
 [assembly: AssemblyFileVersion("1.0.1505.0")]

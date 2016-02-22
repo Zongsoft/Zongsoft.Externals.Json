@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>http://www.gnu.org/licenses/lgpl-2.1.html</licenseUrl>
+    <projectUrl>https://github.com/Zongsoft/Zongsoft.Externals.Json</projectUrl>
+    <iconUrl>https://avatars.githubusercontent.com/u/4804332</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>$description$</description>
+    <summary>关于 Json 序列化相关功能的扩展类库。</summary>
+    <releaseNotes>关于 Json 序列化相关功能的扩展类库。</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>Zongsoft External JSON Serialization</tags>
+    <dependencies>
+        <dependency id="Zongsoft.CoreLibrary" version="4.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Zongsoft.Externals.Json.plugin" target="content\plugins\Zongsoft.Externals\Json\" />
+    <file src="bin\$configuration$\Zongsoft.Externals.Json.dll" target="content\plugins\Zongsoft.Externals\Json\" />
+  </files>
+</package>
