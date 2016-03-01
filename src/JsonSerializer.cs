@@ -85,7 +85,7 @@ namespace Zongsoft.Externals.Json
 			if(graph == null)
 				return;
 
-			using(var writer = new StreamWriter(serializationStream, System.Text.Encoding.UTF8))
+			using(var writer = new StreamWriter(serializationStream, System.Text.Encoding.UTF8, 1024, true))
 			{
 				var serializer = this.GetSerializer(settings);
 				serializer.Serialize(writer, graph);
