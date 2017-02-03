@@ -1,0 +1,4 @@
+src/Zongsoft.Externals.Json.plugin
+src/Zongsoft.Externals.Json.option
+src/bin/$(Edition)/Zongsoft.Externals.Json.*
+src/bin/$(Edition)/Newtonsoft.*
