@@ -15,7 +15,7 @@
 	<!-- 定义Json序列化器对象 -->
 	<extension path="/Workbench/Runtime/Serialization">
 		<object name="Json" value="{static:Zongsoft.Externals.Json.JsonSerializer.Default, Zongsoft.Externals.Json}">
-			<object.property name="Json" type="Zongsoft.Runtime.Serialization.Serializer, Zongsoft.CoreLibrary" value="{path:.}" />
+			<object.property name="Json" target="{type:Zongsoft.Runtime.Serialization.Serializer, Zongsoft.CoreLibrary}" value="{path:.}" />
 		</object>
 	</extension>
 
