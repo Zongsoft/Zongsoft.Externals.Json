@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zongsoft.Externals.Json", "Zongsoft.Externals.Json.csproj", "{06E4092B-FF4C-4B4F-99E1-86EA32785031}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zongsoft.Externals.Json.Tests", "..\tests\Zongsoft.Externals.Json.Tests.csproj", "{A525A1B0-DE5F-4AA6-8849-EFEBB24D5F4D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zongsoft.Externals.Json.Tests", "..\tests\Zongsoft.Externals.Json.Tests.csproj", "{6353DCDC-97FE-42DD-A1D1-2232819A1528}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{06E4092B-FF4C-4B4F-99E1-86EA32785031}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06E4092B-FF4C-4B4F-99E1-86EA32785031}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06E4092B-FF4C-4B4F-99E1-86EA32785031}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A525A1B0-DE5F-4AA6-8849-EFEBB24D5F4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A525A1B0-DE5F-4AA6-8849-EFEBB24D5F4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A525A1B0-DE5F-4AA6-8849-EFEBB24D5F4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A525A1B0-DE5F-4AA6-8849-EFEBB24D5F4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6353DCDC-97FE-42DD-A1D1-2232819A1528}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6353DCDC-97FE-42DD-A1D1-2232819A1528}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6353DCDC-97FE-42DD-A1D1-2232819A1528}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6353DCDC-97FE-42DD-A1D1-2232819A1528}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
