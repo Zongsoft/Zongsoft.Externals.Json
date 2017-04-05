@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 using Zongsoft.Runtime.Serialization;
@@ -175,6 +176,9 @@ namespace Zongsoft.Externals.Json
 					result.DefaultValueHandling = DefaultValueHandling.Ignore;
 			}
 
+			//加入未确定类型的转换器(一律转换成字典)
+			result.Converters.Add(new ObjectConverter());
+
 			return result;
 		}
 
@@ -274,24 +278,15 @@ namespace Zongsoft.Externals.Json
 				return properties;
 			}
 
-			protected override IValueProvider CreateMemberValueProvider(MemberInfo member)
-			{
-				var valueProvider = base.CreateMemberValueProvider(member);
-
-				return valueProvider;
-			}
-
 			public override JsonContract ResolveContract(Type type)
 			{
 				var contract = base.ResolveContract(type);
-
 				return contract;
 			}
 
 			protected override JsonConverter ResolveContractConverter(Type objectType)
 			{
 				var converter = base.ResolveContractConverter(objectType);
-
 				return converter;
 			}
 
@@ -400,6 +395,45 @@ namespace Zongsoft.Externals.Json
 				{
 					return _constructor.Invoke(parameters);
 				}
+			}
+		}
+
+		public class ObjectConverter : JsonConverter
+		{
+			public override bool CanConvert(Type objectType)
+			{
+				return objectType == typeof(object);
+			}
+
+			public override object ReadJson(JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
+			{
+				switch(reader.TokenType)
+				{
+					case JsonToken.StartArray:
+						var array = (JArray)JArray.ReadFrom(reader);
+						var result = new Dictionary<string, object>[array.Count];
+
+						for(int i = 0; i < result.Length; i++)
+							result[i] = array[i].ToObject<Dictionary<string, object>>();
+
+						return result;
+					case JsonToken.StartObject:
+						var obj = JObject.ReadFrom(reader);
+						return obj.ToObject<Dictionary<string, object>>();
+
+						//Tip:以下代码或许可以递归激发该类型转换的解析
+						//return serializer.Deserialize<Dictionary<string, object>>(reader);
+					case JsonToken.Null:
+					case JsonToken.Undefined:
+						return null;
+					default:
+						return reader.Value;
+				}
+			}
+
+			public override void WriteJson(JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer)
+			{
+				throw new NotSupportedException();
 			}
 		}
 		#endregion

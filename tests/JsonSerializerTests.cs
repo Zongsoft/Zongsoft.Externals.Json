@@ -92,6 +92,15 @@ namespace Zongsoft.Externals.Json.Tests
 
 			Assert.NotNull(certification);
 		}
+
+		[Fact]
+		public void DeserializeDictionaryTest()
+		{
+			var text = @"{AssetId:100001, AssetNo:'A001', Projects:[{ProjectId:1},{ProjectId:3}], Creator:{UserId:100, Name:'Popeye'}}";
+			var dictionary = JsonSerializer.Default.Deserialize<Dictionary<string, object>>(text);
+			Assert.NotNull(dictionary);
+			Assert.Equal(4, dictionary.Count);
+		}
 		#endregion
 
 		#region 测试实体
