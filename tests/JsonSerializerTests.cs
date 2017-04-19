@@ -181,11 +181,11 @@ namespace Zongsoft.Externals.Json.Tests
 		public class UserProfile : Zongsoft.Security.Membership.User
 		{
 			#region 构造函数
-			public UserProfile(int userId, string name) : base(userId, name)
+			public UserProfile(uint userId, string name) : base(userId, name)
 			{
 			}
 
-			public UserProfile(int userId, string name, string @namespace) : base(userId, name, @namespace)
+			public UserProfile(uint userId, string name, string @namespace) : base(userId, name, @namespace)
 			{
 			}
 			#endregion
@@ -232,7 +232,7 @@ namespace Zongsoft.Externals.Json.Tests
 
 			public override int GetHashCode()
 			{
-				return this.UserId;
+				return (int)this.UserId;
 			}
 			#endregion
 		}
