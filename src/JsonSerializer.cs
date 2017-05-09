@@ -26,6 +26,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
@@ -289,6 +290,9 @@ namespace Zongsoft.Externals.Json
 
 						if(binder != null)
 						{
+							//绑定器属性可能会依赖其他属性值，所以需要将该属性排在最后
+							property.Order = int.MaxValue;
+
 							//如果成员绑定器支持值绑定转换
 							if(binder.GetMemberValueSupported)
 								property.ValueProvider = new ValueProvider(property.PropertyName, (container, value) => binder.GetMemberValue(property.PropertyName, container, value));
@@ -306,7 +310,7 @@ namespace Zongsoft.Externals.Json
 					}
 				}
 
-				return properties;
+				return properties.OrderBy(p => p.Order.HasValue ? p.Order.Value : 0).ToArray();
 			}
 
 			public override JsonContract ResolveContract(Type type)
