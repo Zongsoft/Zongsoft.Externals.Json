@@ -94,6 +94,45 @@ namespace Zongsoft.Externals.Json.Tests
 		}
 
 		[Fact]
+		public void DeserializeDepartmentTest()
+		{
+			var department = new Department
+			{
+				DepartmentId = 101,
+				PrincipalKind = 1,
+				Principal = new Employee
+				{
+					EmployeeId = 1,
+					EmployeeNo = "A001",
+					Hiredate = DateTime.Parse("2017-3-4"),
+					JobState = 2,
+				}
+			};
+
+			var json = @"
+{
+  ""DepartmentId"": 101,
+  ""Name"": ""Software Development"",
+  ""PrincipalKind"": 1,
+  ""Principal"": {
+    ""EmployeeId"": 1,
+    ""EmployeeNo"": ""A001"",
+    ""CorporationId"": 0,
+    ""JobState"": 2,
+    ""Hiredate"": ""2017-03-04T00:00:00"",
+    ""Leavedate"": null,
+    ""UserId"": 0,
+    ""User"": null
+  }
+}";
+			var result = JsonSerializer.Default.Deserialize<Department>(json);
+
+			Assert.NotNull(result);
+			Assert.NotNull(result.Principal);
+			Assert.IsType<Employee>(result.Principal);
+		}
+
+		[Fact]
 		public void DeserializeDictionaryTest()
 		{
 			var text = @"{AssetId:100001, AssetNo:'A001', Projects:[{ProjectId:1},{ProjectId:3}], Creator:{UserId:100, Name:'Popeye'}}";
@@ -104,6 +143,52 @@ namespace Zongsoft.Externals.Json.Tests
 		#endregion
 
 		#region 测试实体
+		public class Department
+		{
+			public int DepartmentId
+			{
+				get;
+				set;
+			}
+
+			public string Name
+			{
+				get;
+				set;
+			}
+
+			public byte PrincipalKind
+			{
+				get;
+				set;
+			}
+
+			[SerializationBinder(typeof(PrincipalBinder))]
+			public object Principal
+			{
+				get;
+				set;
+			}
+
+			#region 自定义成员反序列绑定器
+			private class PrincipalBinder : SerializationBinderBase<Department>
+			{
+				protected override Type GetMemberType(string name, Department container)
+				{
+					switch(container.PrincipalKind)
+					{
+						case 0:
+							return typeof(UserProfile);
+						case 1:
+							return typeof(Employee);
+						default:
+							return null;
+					}
+				}
+			}
+			#endregion
+		}
+
 		public class Employee
 		{
 			#region 构造函数

@@ -26,7 +26,7 @@
 
 using System;
 using System.IO;
-using System.ComponentModel;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -115,7 +115,7 @@ namespace Zongsoft.Externals.Json
 			if(serializationStream == null)
 				throw new ArgumentNullException("serializationStream");
 
-			using(var reader = new StreamReader(serializationStream, System.Text.Encoding.UTF8))
+			using(var reader = new StreamReader(serializationStream, System.Text.Encoding.UTF8, false, 1024, true))
 			{
 				var serializer = this.GetSerializer(_settings);
 				serializer.TypeNameHandling = TypeNameHandling.Objects;
@@ -172,12 +172,12 @@ namespace Zongsoft.Externals.Json
 			{
 				result.Formatting = settings.Indented ? Newtonsoft.Json.Formatting.Indented : Newtonsoft.Json.Formatting.None;
 
+				if(settings.MaximumDepth > 0)
+					result.MaxDepth = settings.MaximumDepth;
+
 				if((settings.SerializationBehavior & SerializationBehavior.IgnoreDefaultValue) == SerializationBehavior.IgnoreDefaultValue)
 					result.DefaultValueHandling = DefaultValueHandling.Ignore;
 			}
-
-			//加入未确定类型的转换器(一律转换成字典)
-			result.Converters.Add(new ObjectConverter());
 
 			return result;
 		}
@@ -226,13 +226,19 @@ namespace Zongsoft.Externals.Json
 		#region 嵌套子类
 		private class MyJsonContractResolver : Newtonsoft.Json.Serialization.DefaultContractResolver
 		{
+			#region 私有变量
 			private SerializationNamingConvention _namingConvention;
+			#endregion
 
+			#region 构造函数
 			public MyJsonContractResolver(SerializationNamingConvention namingConvention)
 			{
 				_namingConvention = namingConvention;
+				this.IgnoreSerializableAttribute = true;
 			}
+			#endregion
 
+			#region 重写方法
 			protected override JsonObjectContract CreateObjectContract(Type objectType)
 			{
 				var contract = base.CreateObjectContract(objectType);
@@ -248,11 +254,11 @@ namespace Zongsoft.Externals.Json
 
 				foreach(var property in properties)
 				{
-					var attributes = property.AttributeProvider.GetAttributes(typeof(Zongsoft.Runtime.Serialization.SerializationMemberAttribute), true);
+					var attributes = property.AttributeProvider.GetAttributes(typeof(SerializationMemberAttribute), true);
 
 					if(attributes != null && attributes.Count > 0)
 					{
-						var attribute = (Zongsoft.Runtime.Serialization.SerializationMemberAttribute)attributes[0];
+						var attribute = (SerializationMemberAttribute)attributes[0];
 
 						if(!string.IsNullOrWhiteSpace(attribute.Name))
 						{
@@ -272,6 +278,31 @@ namespace Zongsoft.Externals.Json
 
 						property.Ignored = (attribute.Behavior == SerializationMemberBehavior.Ignored);
 						property.Required = (attribute.Behavior == SerializationMemberBehavior.Required) ? Required.AllowNull : Required.Default;
+					}
+
+					attributes = property.AttributeProvider.GetAttributes(typeof(SerializationBinderAttribute), true);
+
+					if(attributes != null && attributes.Count > 0)
+					{
+						//获取当前成员指定的反序列化绑定器
+						var binder = this.GetBinder(((SerializationBinderAttribute)attributes[0]).BinderType);
+
+						if(binder != null)
+						{
+							//如果成员绑定器支持值绑定转换
+							if(binder.GetMemberValueSupported)
+								property.ValueProvider = new ValueProvider(property.PropertyName, (container, value) => binder.GetMemberValue(property.PropertyName, container, value));
+
+							property.ShouldDeserialize = container =>
+							{
+								var propertyType = binder.GetMemberType(property.PropertyName, container);
+
+								if(propertyType != null)
+									property.PropertyType = propertyType;
+
+								return true;
+							};
+						}
 					}
 				}
 
@@ -301,6 +332,16 @@ namespace Zongsoft.Externals.Json
 					default:
 						return base.ResolvePropertyName(propertyName);
 				}
+			}
+			#endregion
+
+			#region 私有方法
+			private Zongsoft.Runtime.Serialization.ISerializationBinder GetBinder(Type type)
+			{
+				if(type != null && typeof(Zongsoft.Runtime.Serialization.ISerializationBinder).IsAssignableFrom(type))
+					return (Zongsoft.Runtime.Serialization.ISerializationBinder)System.Activator.CreateInstance(type);
+
+				return null;
 			}
 
 			private void SetObjectCreator(JsonObjectContract contract)
@@ -381,6 +422,78 @@ namespace Zongsoft.Externals.Json
 
 				return new string(chars);
 			}
+			#endregion
+
+			#region 嵌套子类
+			private class ValueProvider : IValueProvider
+			{
+				private string _name;
+				private Func<object, object, object> _bind;
+
+				public ValueProvider(string name, Func<object, object, object> bind)
+				{
+					_name = name;
+					_bind = bind;
+				}
+
+				public object GetValue(object target)
+				{
+					return null;
+				}
+
+				public void SetValue(object target, object value)
+				{
+					if(target == null)
+						return;
+
+					//如果待转换的成员值是JObject这样的动态对象，则将其转换成字典
+					if(value is JObject)
+						value = this.ToDictionary((JObject)value);
+
+					//执行绑定操作，将待设置的成员值转换成成员的真实值
+					var boundValue = _bind(target, value);
+
+					if(target is IDictionary)
+					{
+						((IDictionary)target)[_name] = boundValue;
+					}
+					else if(target is IDictionary<string, object>)
+					{
+						((IDictionary<string, object>)target)[_name] = boundValue;
+					}
+					else if(target is IDictionary<string, string>)
+					{
+						((IDictionary<string, string>)target)[_name] = Zongsoft.Common.Convert.ConvertValue<string>(boundValue);
+					}
+					else
+					{
+						var members = target.GetType().GetMember(_name, MemberTypes.Property | MemberTypes.Field, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+						if(members != null && members.Length == 1)
+						{
+							if(members[0].MemberType == MemberTypes.Field)
+								((FieldInfo)members[0]).SetValue(target, boundValue);
+							else if(members[0].MemberType == MemberTypes.Property)
+								((PropertyInfo)members[0]).SetValue(target, boundValue);
+						}
+					}
+				}
+
+				private IDictionary<string, object> ToDictionary(JObject target)
+				{
+					if(target == null)
+						return null;
+
+					var dictionary = new Dictionary<string, object>(target.Count);
+
+					foreach(var property in target.Properties())
+					{
+						dictionary[property.Name] = property.Value;
+					}
+
+					return dictionary;
+				}
+			}
 
 			private class ObjectCreator
 			{
@@ -396,6 +509,7 @@ namespace Zongsoft.Externals.Json
 					return _constructor.Invoke(parameters);
 				}
 			}
+			#endregion
 		}
 
 		public class ObjectConverter : JsonConverter
