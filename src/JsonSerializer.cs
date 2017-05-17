@@ -315,14 +315,25 @@ namespace Zongsoft.Externals.Json
 
 			public override JsonContract ResolveContract(Type type)
 			{
-				var contract = base.ResolveContract(type);
-				return contract;
+				if(type == typeof(object))
+				{
+					var contract = base.ResolveContract(type);
+					return contract;
+				}
+
+				return base.ResolveContract(type);
 			}
 
 			protected override JsonConverter ResolveContractConverter(Type objectType)
 			{
-				var converter = base.ResolveContractConverter(objectType);
-				return converter;
+				if(objectType == typeof(object))
+				{
+					var converter = base.ResolveContractConverter(objectType);
+					converter = new ObjectConverter();
+					return converter;
+				}
+
+				return base.ResolveContractConverter(objectType);
 			}
 
 			protected override string ResolvePropertyName(string propertyName)
@@ -354,17 +365,18 @@ namespace Zongsoft.Externals.Json
 					return;
 
 				//获取以构造函数参数的数量多少为排序依据的构造函数信息集合
-				var constructors = System.Linq.Enumerable.OrderByDescending(contract.CreatedType.GetConstructors(), info => info.GetParameters().Length);
+				var constructors = contract.CreatedType.GetConstructors().OrderByDescending(info => info.GetParameters().Length).ToArray();
 
-				foreach(var constructor in constructors)
+				for(int i=0; i< constructors.Length; i++)
 				{
+					var constructor = constructors[i];
 					var parameters = constructor.GetParameters();
 
 					foreach(var parameter in parameters)
 					{
 						var property = contract.Properties.GetProperty(parameter.Name, StringComparison.OrdinalIgnoreCase);
 
-						if(property == null)
+						if(property == null || property.Writable)
 							break;
 
 						contract.CreatorParameters.AddProperty(property);
