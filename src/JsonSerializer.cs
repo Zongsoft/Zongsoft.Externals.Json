@@ -549,6 +549,19 @@ namespace Zongsoft.Externals.Json
 						return result;
 					case JsonToken.StartObject:
 						var obj = JObject.ReadFrom(reader);
+
+						if(obj.First != null && obj.First.Type == JTokenType.Property)
+						{
+							if(((JProperty)obj.First).Name == "$type")
+							{
+								var typeName = ((JValue)((JProperty)obj.First).Value).Value.ToString();
+								var type = Type.GetType(typeName, false);
+
+								if(type != null)
+									return obj.ToObject(type);
+							}
+						}
+
 						return obj.ToObject<Dictionary<string, object>>();
 
 						//Tip:以下代码或许可以递归激发该类型转换的解析

@@ -77,6 +77,28 @@ namespace Zongsoft.Externals.Json.Tests
 			text = JsonSerializer.Default.Serialize(_credential);
 
 			Assert.NotNull(text);
+
+			var department = new Department
+			{
+				DepartmentId = 1,
+				Name = "Development",
+				PrincipalKind = 99,
+				Principal = new Employee
+				{
+					UserId = 100,
+					EmployeeId = 101,
+					EmployeeNo = "A101",
+					Hiredate = DateTime.Today,
+				}
+			};
+
+			var json = JsonSerializer.Default.Serialize(department, new TextSerializationSettings() { Indented = true, Typed = true, SerializationBehavior = SerializationBehavior.IgnoreDefaultValue});
+			Assert.NotNull(json);
+
+			department = JsonSerializer.Default.Deserialize<Department>(json);
+			Assert.NotNull(department);
+			Assert.NotNull(department.Principal);
+			Assert.IsType<Employee>(department.Principal);
 		}
 
 		[Fact]
