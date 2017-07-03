@@ -541,12 +541,18 @@ namespace Zongsoft.Externals.Json
 				{
 					case JsonToken.StartArray:
 						var array = (JArray)JArray.ReadFrom(reader);
-						var result = new Dictionary<string, object>[array.Count];
 
-						for(int i = 0; i < result.Length; i++)
-							result[i] = array[i].ToObject<Dictionary<string, object>>();
+						if(array.Count > 0 && array.FirstOrDefault().Type == JTokenType.Object)
+						{
+							var result = new Dictionary<string, object>[array.Count];
 
-						return result;
+							for(int i = 0; i < result.Length; i++)
+								result[i] = array[i].ToObject<Dictionary<string, object>>();
+
+							return result;
+						}
+
+						return array;
 					case JsonToken.StartObject:
 						var obj = JObject.ReadFrom(reader);
 
