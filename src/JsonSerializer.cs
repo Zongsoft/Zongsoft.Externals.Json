@@ -552,7 +552,7 @@ namespace Zongsoft.Externals.Json
 							return result;
 						}
 
-						return array;
+						return reader.Value;
 					case JsonToken.StartObject:
 						var obj = JObject.ReadFrom(reader);
 
