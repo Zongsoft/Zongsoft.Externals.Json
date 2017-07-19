@@ -163,6 +163,7 @@ namespace Zongsoft.Externals.Json
 		{
 			var result = new Newtonsoft.Json.JsonSerializerSettings()
 			{
+				DateFormatString = "yyyy-MM-ddTHH:mm:ss",
 				Formatting = Formatting.None,
 				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
 				TypeNameHandling = (settings != null && settings.Typed) ? Newtonsoft.Json.TypeNameHandling.Objects : TypeNameHandling.None,
@@ -330,6 +331,15 @@ namespace Zongsoft.Externals.Json
 				{
 					var converter = base.ResolveContractConverter(objectType);
 					converter = new ObjectConverter();
+					return converter;
+				}
+				else if(objectType == typeof(DateTime))
+				{
+					var converter = base.ResolveContractConverter(objectType);
+
+					if(converter == null)
+						return new UnixTimestampConverter();
+
 					return converter;
 				}
 

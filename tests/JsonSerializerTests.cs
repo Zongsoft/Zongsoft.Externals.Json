@@ -61,7 +61,7 @@ namespace Zongsoft.Externals.Json.Tests
 				FullName = "Popeye Zhong",
 				Email = "popeye@automao.cn",
 				PhoneNumber = "18912345678",
-				Birthdate = new DateTime(1979, 5, 15),
+				Birthdate = DateTime.Now,
 				Principal = "001",
 				Grade = 0,
 				TotalPoints = Zongsoft.Common.RandomGenerator.GenerateInt32(),
@@ -159,7 +159,7 @@ namespace Zongsoft.Externals.Json.Tests
     ""EmployeeNo"": ""A001"",
     ""CorporationId"": 0,
     ""JobState"": 2,
-    ""Hiredate"": ""2017-03-04T00:00:00"",
+    ""Hiredate"": 974202655000,
     ""Leavedate"": null,
     ""UserId"": 0,
     ""User"": null
