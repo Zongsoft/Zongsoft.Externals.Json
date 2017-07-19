@@ -335,16 +335,6 @@ namespace Zongsoft.Externals.Json
 					converter = new ObjectConverter();
 					return converter;
 				}
-				else if(objectType == typeof(DateTime) || objectType == typeof(DateTime?) ||
-				        objectType == typeof(DateTimeOffset) || objectType == typeof(DateTimeOffset?))
-				{
-					var converter = base.ResolveContractConverter(objectType);
-
-					if(converter == null)
-						return new DateTimeConverter();
-
-					return converter;
-				}
 
 				return base.ResolveContractConverter(objectType);
 			}

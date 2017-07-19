@@ -66,7 +66,7 @@ namespace Zongsoft.Externals.Json.Tests
 				Grade = 0,
 				TotalPoints = Zongsoft.Common.RandomGenerator.GenerateInt32(),
 				Description = "我是凹凸猫的一号员工！",
-			});
+			}, new TextSerializationSettings() { DateTimeFormat = "yyyy-MM-dd HH:mm:ss" });
 
 			Assert.NotNull(text);
 
