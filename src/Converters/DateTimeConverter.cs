@@ -29,7 +29,7 @@ using System;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Zongsoft.Externals.Json
+namespace Zongsoft.Externals.Json.Converters
 {
 	public class DateTimeConverter : IsoDateTimeConverter
 	{
@@ -78,6 +78,13 @@ namespace Zongsoft.Externals.Json
 					return ORIGIN_UNIX_TIMESTAMP.AddMilliseconds(number);
 				else
 					return ORIGIN_UNIX_TIMESTAMP.AddMilliseconds(number).ToLocalTime();
+			}
+			else if(reader.TokenType == JsonToken.String)
+			{
+				DateTime datetime;
+
+				if(DateTime.TryParse(reader.Value.ToString(), this.Culture, this.DateTimeStyles, out datetime))
+					return datetime;
 			}
 
 			return base.ReadJson(reader, objectType, existingValue, serializer);
