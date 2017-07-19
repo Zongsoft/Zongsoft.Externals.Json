@@ -33,12 +33,17 @@ namespace Zongsoft.Externals.Json
 {
 	public class DateTimeConverter : IsoDateTimeConverter
 	{
-		private static readonly DateTime OriginTimestamp = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		#region 静态字段
+		private static readonly DateTime ORIGIN_UNIX_TIMESTAMP = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		#endregion
 
 		#region 构造函数
-		public DateTimeConverter()
+		public DateTimeConverter(string datetimeFormat = null)
 		{
-			this.DateTimeFormat = "yyyy-MM-ddTHH:mm:ss";
+			if(string.IsNullOrWhiteSpace(datetimeFormat))
+				this.DateTimeFormat = "yyyy-MM-ddTHH:mm:ss";
+			else
+				this.DateTimeFormat = datetimeFormat;
 		}
 		#endregion
 
@@ -70,9 +75,9 @@ namespace Zongsoft.Externals.Json
 				var number = System.Convert.ToDouble(reader.Value);
 
 				if(type == typeof(DateTimeOffset))
-					return OriginTimestamp.AddMilliseconds(number);
+					return ORIGIN_UNIX_TIMESTAMP.AddMilliseconds(number);
 				else
-					return OriginTimestamp.AddMilliseconds(number).ToLocalTime();
+					return ORIGIN_UNIX_TIMESTAMP.AddMilliseconds(number).ToLocalTime();
 			}
 
 			return base.ReadJson(reader, objectType, existingValue, serializer);
@@ -84,13 +89,13 @@ namespace Zongsoft.Externals.Json
 			{
 				if(value is DateTime)
 				{
-					var number = ((DateTime)value - OriginTimestamp.ToLocalTime()).TotalMilliseconds;
+					var number = ((DateTime)value - ORIGIN_UNIX_TIMESTAMP.ToLocalTime()).TotalMilliseconds;
 					writer.WriteValue(number);
 					return;
 				}
 				else if(value is DateTimeOffset)
 				{
-					var number = ((DateTimeOffset)value - OriginTimestamp).TotalMilliseconds;
+					var number = ((DateTimeOffset)value - ORIGIN_UNIX_TIMESTAMP).TotalMilliseconds;
 					writer.WriteValue(number);
 					return;
 				}

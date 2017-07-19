@@ -163,7 +163,6 @@ namespace Zongsoft.Externals.Json
 		{
 			var result = new Newtonsoft.Json.JsonSerializerSettings()
 			{
-				DateFormatString = "yyyy-MM-ddTHH:mm:ss",
 				Formatting = Formatting.None,
 				ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
 				TypeNameHandling = (settings != null && settings.Typed) ? Newtonsoft.Json.TypeNameHandling.Objects : TypeNameHandling.None,
@@ -180,6 +179,9 @@ namespace Zongsoft.Externals.Json
 				if((settings.SerializationBehavior & SerializationBehavior.IgnoreDefaultValue) == SerializationBehavior.IgnoreDefaultValue)
 					result.DefaultValueHandling = DefaultValueHandling.Ignore;
 			}
+
+			//添加增强版的日期时间转换器
+			result.Converters.Add(new DateTimeConverter(settings?.DateTimeFormat));
 
 			return result;
 		}
