@@ -31,10 +31,26 @@ using Newtonsoft.Json.Converters;
 
 namespace Zongsoft.Externals.Json
 {
-	public class UnixTimestampConverter : DateTimeConverterBase
+	public class DateTimeConverter : IsoDateTimeConverter
 	{
-		private static readonly DateTime OriginalTimestamp = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		private static readonly DateTime OriginTimestamp = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
+		#region 构造函数
+		public DateTimeConverter()
+		{
+			this.DateTimeFormat = "yyyy-MM-ddTHH:mm:ss";
+		}
+		#endregion
+
+		#region 公共属性
+		public bool UnixTimestampRequired
+		{
+			get;
+			set;
+		}
+		#endregion
+
+		#region 重写方法
 		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
 		{
 			bool isNullable = objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(Nullable<>);
@@ -54,33 +70,34 @@ namespace Zongsoft.Externals.Json
 				var number = System.Convert.ToUInt64(reader.Value);
 
 				if(type == typeof(DateTimeOffset))
-					return OriginalTimestamp.AddMilliseconds(number);
+					return OriginTimestamp.AddMilliseconds(number);
 				else
-					return OriginalTimestamp.AddMilliseconds(number).ToLocalTime();
+					return OriginTimestamp.AddMilliseconds(number).ToLocalTime();
 			}
 
-			var iso = new IsoDateTimeConverter();
-			return iso.ReadJson(reader, objectType, existingValue, serializer);
+			return base.ReadJson(reader, objectType, existingValue, serializer);
 		}
 
 		public override void WriteJson(JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer)
 		{
-			string text;
+			if(this.UnixTimestampRequired)
+			{
+				if(value is DateTime)
+				{
+					var text = (((DateTime)value - OriginTimestamp.ToLocalTime()).TotalMilliseconds).ToString();
+					writer.WriteValue(text);
+					return;
+				}
+				else if(value is DateTimeOffset)
+				{
+					var text = (((DateTimeOffset)value - OriginTimestamp).TotalMilliseconds).ToString();
+					writer.WriteValue(text);
+					return;
+				}
+			}
 
-			if(value is DateTime)
-			{
-				text = (((DateTime)value - OriginalTimestamp.ToLocalTime()).TotalMilliseconds).ToString();
-			}
-            else if (value is DateTimeOffset)
-			{
-				text = (((DateTimeOffset)value - OriginalTimestamp).TotalMilliseconds).ToString();
-			}
-			else
-			{
-				throw new NotSupportedException("Unexpected value when converting date. Expected DateTime or DateTimeOffset.");
-			}
-
-			writer.WriteValue(text);
+			base.WriteJson(writer, value, serializer);
 		}
+		#endregion
 	}
 }

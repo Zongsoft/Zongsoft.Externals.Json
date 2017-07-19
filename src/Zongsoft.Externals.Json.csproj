@@ -44,7 +44,7 @@
   <ItemGroup>
     <Compile Include="JsonSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UnixTimestampConverter.cs" />
+    <Compile Include="DateTimeConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
