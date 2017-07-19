@@ -67,7 +67,7 @@ namespace Zongsoft.Externals.Json
 
 			if(reader.TokenType == JsonToken.Integer || reader.TokenType == JsonToken.Float)
 			{
-				var number = System.Convert.ToUInt64(reader.Value);
+				var number = System.Convert.ToDouble(reader.Value);
 
 				if(type == typeof(DateTimeOffset))
 					return OriginTimestamp.AddMilliseconds(number);
@@ -84,14 +84,14 @@ namespace Zongsoft.Externals.Json
 			{
 				if(value is DateTime)
 				{
-					var text = (((DateTime)value - OriginTimestamp.ToLocalTime()).TotalMilliseconds).ToString();
-					writer.WriteValue(text);
+					var number = ((DateTime)value - OriginTimestamp.ToLocalTime()).TotalMilliseconds;
+					writer.WriteValue(number);
 					return;
 				}
 				else if(value is DateTimeOffset)
 				{
-					var text = (((DateTimeOffset)value - OriginTimestamp).TotalMilliseconds).ToString();
-					writer.WriteValue(text);
+					var number = ((DateTimeOffset)value - OriginTimestamp).TotalMilliseconds;
+					writer.WriteValue(number);
 					return;
 				}
 			}
