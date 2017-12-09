@@ -177,7 +177,10 @@ namespace Zongsoft.Externals.Json
 					result.MaxDepth = settings.MaximumDepth;
 
 				if((settings.SerializationBehavior & SerializationBehavior.IgnoreDefaultValue) == SerializationBehavior.IgnoreDefaultValue)
+				{
 					result.DefaultValueHandling = DefaultValueHandling.Ignore;
+					result.NullValueHandling = NullValueHandling.Ignore;
+				}
 			}
 
 			//添加增强版的日期时间转换器
