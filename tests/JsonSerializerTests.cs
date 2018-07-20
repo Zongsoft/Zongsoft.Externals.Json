@@ -114,17 +114,15 @@ namespace Zongsoft.Externals.Json.Tests
 			var certification = JsonSerializer.Default.Deserialize<Zongsoft.Security.Credential>(text);
 			Assert.NotNull(certification);
 
-			var conditional = new EmployeeConditional()
-			{
-				EmployeeNo = "A001",
-				Hiredate = new ConditionalRange<DateTime>(new DateTime(2010, 1, 1), DateTime.Today),
-				Leavedate = new ConditionalRange<DateTime>(new DateTime(2017, 1, 1), null),
-			};
+			var conditional = Zongsoft.Data.Entity.Build<IEmployeeConditional>();
+			conditional.EmployeeNo = "A001";
+			conditional.Hiredate = new ConditionalRange<DateTime>(new DateTime(2010, 1, 1), DateTime.Today);
+			conditional.Leavedate = new ConditionalRange<DateTime>(new DateTime(2017, 1, 1), null);
 
 			text = JsonSerializer.Default.Serialize(conditional);
 			Assert.NotNull(text);
 
-			var result = JsonSerializer.Default.Deserialize<EmployeeConditional>(text);
+			var result = JsonSerializer.Default.Deserialize<IEmployeeConditional>(text);
 			Assert.NotNull(result);
 			Assert.Equal("A001", result.EmployeeNo);
 			Assert.NotNull(result.Hiredate);
@@ -183,54 +181,26 @@ namespace Zongsoft.Externals.Json.Tests
 		#endregion
 
 		#region 测试实体
-		public class EmployeeConditional : Zongsoft.Data.Conditional
+		public interface IEmployeeConditional : Zongsoft.Data.IConditional
 		{
-			public int EmployeeId
+			int EmployeeId
 			{
-				get
-				{
-					return this.GetPropertyValue(() => this.EmployeeId);
-				}
-				set
-				{
-					this.SetPropertyValue(() => this.EmployeeId, value);
-				}
+				get; set;
 			}
 
-			public string EmployeeNo
+			string EmployeeNo
 			{
-				get
-				{
-					return this.GetPropertyValue(() => this.EmployeeNo);
-				}
-				set
-				{
-					this.SetPropertyValue(() => this.EmployeeNo, value);
-				}
+				get; set;
 			}
 
-			public ConditionalRange<DateTime> Hiredate
+			ConditionalRange<DateTime> Hiredate
 			{
-				get
-				{
-					return this.GetPropertyValue(() => this.Hiredate);
-				}
-				set
-				{
-					this.SetPropertyValue(() => this.Hiredate, value);
-				}
+				get; set;
 			}
 
-			public ConditionalRange<DateTime> Leavedate
+			ConditionalRange<DateTime> Leavedate
 			{
-				get
-				{
-					return this.GetPropertyValue(() => this.Leavedate);
-				}
-				set
-				{
-					this.SetPropertyValue(() => this.Leavedate, value);
-				}
+				get; set;
 			}
 		}
 

@@ -321,21 +321,20 @@ namespace Zongsoft.Externals.Json
 
 			public override JsonContract ResolveContract(Type type)
 			{
-				if(type == typeof(object))
-				{
-					var contract = base.ResolveContract(type);
-					return contract;
-				}
+				var contract = base.ResolveContract(type);
 
-				return base.ResolveContract(type);
+				if(type.IsInterface && !Common.TypeExtension.IsEnumerable(type))
+					contract.DefaultCreator = () => Zongsoft.Data.Entity.Build(type);
+
+				return contract;
 			}
 
 			protected override JsonConverter ResolveContractConverter(Type objectType)
 			{
 				if(objectType == typeof(object))
 				{
-					var converter = base.ResolveContractConverter(objectType);
-					converter = new Converters.ObjectConverter();
+					//var converter = base.ResolveContractConverter(objectType);
+					var converter = new Converters.ObjectConverter();
 					return converter;
 				}
 
