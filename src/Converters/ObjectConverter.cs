@@ -34,6 +34,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace Zongsoft.Externals.Json.Converters
 {
+	[Obsolete]
 	public class ObjectConverter : JsonConverter
 	{
 		public override bool CanConvert(Type objectType)
@@ -70,7 +71,9 @@ namespace Zongsoft.Externals.Json.Converters
 							var type = Type.GetType(typeName, false);
 
 							if(type != null)
+							{
 								return obj.ToObject(type);
+							}
 						}
 					}
 

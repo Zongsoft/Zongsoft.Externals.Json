@@ -189,10 +189,11 @@ namespace Zongsoft.Externals.Json
 			return result;
 		}
 
+		[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
 		private Newtonsoft.Json.JsonSerializer GetSerializer(Zongsoft.Runtime.Serialization.SerializationSettings settings)
 		{
-			var jsonSettings = this.GetSerializerSettings(settings as TextSerializationSettings ?? _settings);
-			return Newtonsoft.Json.JsonSerializer.Create(jsonSettings);
+			var serializer = Newtonsoft.Json.JsonSerializer.Create(this.GetSerializerSettings(settings as TextSerializationSettings ?? _settings));
+			return serializer;
 		}
 		#endregion
 
@@ -231,7 +232,7 @@ namespace Zongsoft.Externals.Json
 		#endregion
 
 		#region 嵌套子类
-		private class MyJsonContractResolver : Newtonsoft.Json.Serialization.DefaultContractResolver
+		private class MyJsonContractResolver : DefaultContractResolver
 		{
 			#region 私有变量
 			private SerializationNamingConvention _namingConvention;
@@ -246,12 +247,13 @@ namespace Zongsoft.Externals.Json
 			#endregion
 
 			#region 重写方法
-			protected override JsonObjectContract CreateObjectContract(Type objectType)
+			protected override JsonObjectContract CreateObjectContract(Type type)
 			{
-				var contract = base.CreateObjectContract(objectType);
+				if(type.Assembly.IsDynamic)
+					type = GetEntityInterface(type);
 
+				var contract = base.CreateObjectContract(type);
 				this.SetObjectCreator(contract);
-
 				return contract;
 			}
 
@@ -267,21 +269,8 @@ namespace Zongsoft.Externals.Json
 					{
 						var attribute = (SerializationMemberAttribute)attributes[0];
 
-						if(!string.IsNullOrWhiteSpace(attribute.Name))
-						{
-							switch(_namingConvention)
-							{
-								case SerializationNamingConvention.Camel:
-									property.PropertyName = ToNamingCase(attribute.Name, true);
-									break;
-								case SerializationNamingConvention.Pascal:
-									property.PropertyName = ToNamingCase(attribute.Name, false);
-									break;
-								default:
-									property.PropertyName = attribute.Name;
-									break;
-							}
-						}
+						if(!string.IsNullOrEmpty(attribute.Name))
+							property.PropertyName = attribute.Name;
 
 						property.Ignored = (attribute.Behavior == SerializationMemberBehavior.Ignored);
 						property.Required = (attribute.Behavior == SerializationMemberBehavior.Required) ? Required.AllowNull : Required.Default;
@@ -322,21 +311,13 @@ namespace Zongsoft.Externals.Json
 			public override JsonContract ResolveContract(Type type)
 			{
 				var contract = base.ResolveContract(type);
-
-				if(type.IsInterface && !Common.TypeExtension.IsEnumerable(type))
-					contract.DefaultCreator = () => Zongsoft.Data.Entity.Build(type);
-
 				return contract;
 			}
 
 			protected override JsonConverter ResolveContractConverter(Type objectType)
 			{
-				if(objectType == typeof(object))
-				{
-					//var converter = base.ResolveContractConverter(objectType);
-					var converter = new Converters.ObjectConverter();
-					return converter;
-				}
+				//if(objectType == typeof(object))
+				//	return new Converters.ObjectConverter();
 
 				return base.ResolveContractConverter(objectType);
 			}
@@ -364,37 +345,57 @@ namespace Zongsoft.Externals.Json
 				return null;
 			}
 
+			private Type GetEntityInterface(Type type)
+			{
+				var contracts = type.GetInterfaces();
+
+				foreach(var contract in contracts)
+				{
+					if(contract.Name == "I" + type.Name)
+						return contract;
+				}
+
+				throw new System.Runtime.Serialization.SerializationException($"The entity interface of the '{type}' dynamic class implementation was not found and serialization was not supported.");
+			}
+
 			private void SetObjectCreator(JsonObjectContract contract)
 			{
-				if(contract.CreatorParameters.Count > 0)
-					return;
-
-				//获取以构造函数参数的数量多少为排序依据的构造函数信息集合
-				var constructors = contract.CreatedType.GetConstructors().OrderByDescending(info => info.GetParameters().Length).ToArray();
-
-				for(int i=0; i< constructors.Length; i++)
+				if(contract.CreatedType == typeof(object))
+					contract.DefaultCreator = () => new Dictionary<string, object>();
+				else if(contract.CreatedType.IsInterface)
+					contract.DefaultCreator = () => Zongsoft.Data.Entity.Build(contract.CreatedType);
+				else
 				{
-					var constructor = constructors[i];
-					var parameters = constructor.GetParameters();
+					if(contract.CreatorParameters.Count > 0)
+						return;
 
-					foreach(var parameter in parameters)
+					//获取以构造函数参数的数量多少为排序依据的构造函数信息集合
+					var constructors = contract.CreatedType.GetConstructors().OrderByDescending(info => info.GetParameters().Length).ToArray();
+
+					for(int i = 0; i < constructors.Length; i++)
 					{
-						var property = contract.Properties.GetProperty(parameter.Name, StringComparison.OrdinalIgnoreCase);
+						var constructor = constructors[i];
+						var parameters = constructor.GetParameters();
 
-						if(property == null || property.Writable)
+						foreach(var parameter in parameters)
+						{
+							var property = contract.Properties.GetProperty(parameter.Name, StringComparison.OrdinalIgnoreCase);
+
+							if(property == null || property.Writable)
+								break;
+
+							contract.CreatorParameters.AddProperty(property);
+						}
+
+						if(parameters.Length != contract.CreatorParameters.Count)
+						{
+							contract.CreatorParameters.Clear();
+						}
+						else
+						{
+							contract.OverrideCreator = new ObjectCreator(constructor).CreateObject;
 							break;
-
-						contract.CreatorParameters.AddProperty(property);
-					}
-
-					if(parameters.Length != contract.CreatorParameters.Count)
-					{
-						contract.CreatorParameters.Clear();
-					}
-					else
-					{
-						contract.OverrideCreator = new ObjectCreator(constructor).CreateObject;
-						break;
+						}
 					}
 				}
 			}
