@@ -19,7 +19,6 @@ namespace Zongsoft.Externals.Json.Tests
 		{
 			var user = new UserProfile(101, "Popeye")
 			{
-				Avatar = "/:mono:/",
 				Gender = JsonSerializerTests.Gender.Male,
 				FullName = "Popeye Zhong",
 				Email = "popeye@automao.cn",
@@ -28,23 +27,13 @@ namespace Zongsoft.Externals.Json.Tests
 				Grade = 0,
 				TotalPoints = Zongsoft.Common.RandomGenerator.GenerateInt32(),
 				Description = "我是凹凸猫的一号员工！",
-				PrincipalId = "1",
-				Principal = new Employee()
-				{
-					EmployeeId = 1,
-					EmployeeNo = "A001",
-					Hiredate = new DateTime(2015, 4, 20),
-					UserId = 101,
-				},
 			};
-
-			((Employee)user.Principal).User = user;
 
 			_credential = new Security.Credential("20150801", user, "Web", TimeSpan.FromHours(2));
 
-			_credential.ExtendedProperties.Add("QQ", "9555****");
-			_credential.ExtendedProperties.Add("WeChatNo", "Automao");
-			_credential.ExtendedProperties.Add("NativePlace", "湖南邵阳");
+			_credential.Parameters.Add("QQ", "9555****");
+			_credential.Parameters.Add("WeChatNo", "Automao");
+			_credential.Parameters.Add("NativePlace", "湖南邵阳");
 		}
 		#endregion
 
