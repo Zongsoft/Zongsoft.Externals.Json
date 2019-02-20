@@ -313,19 +313,54 @@ namespace Zongsoft.Externals.Json.Tests
 			#endregion
 		}
 
-		public class UserProfile : Zongsoft.Security.Membership.User
+		public class UserProfile : Zongsoft.Security.Membership.IUserIdentity
 		{
 			#region 构造函数
-			public UserProfile(uint userId, string name) : base(userId, name)
+			public UserProfile(uint userId, string name)
 			{
+				this.UserId = userId;
+				this.Name = name;
 			}
 
-			public UserProfile(uint userId, string name, string @namespace) : base(userId, name, @namespace)
+			public UserProfile(uint userId, string name, string @namespace)
 			{
+				this.UserId = userId;
+				this.Name = name;
+				this.Namespace = @namespace;
 			}
 			#endregion
 
 			#region 公共属性
+			public uint UserId
+			{
+				get; set;
+			}
+
+			public string Name
+			{
+				get; set;
+			}
+
+			public string FullName
+			{
+				get; set;
+			}
+
+			public string Namespace
+			{
+				get; set;
+			}
+
+			public string Email
+			{
+				get; set;
+			}
+
+			public string PhoneNumber
+			{
+				get; set;
+			}
+
 			[SerializationMember("Sex")]
 			public Gender Gender
 			{
@@ -351,6 +386,11 @@ namespace Zongsoft.Externals.Json.Tests
 			{
 				get;
 				set;
+			}
+
+			public string Description
+			{
+				get; set;
 			}
 			#endregion
 
