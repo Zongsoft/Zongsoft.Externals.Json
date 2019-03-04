@@ -176,10 +176,13 @@ namespace Zongsoft.Externals.Json
 				if(settings.MaximumDepth > 0)
 					result.MaxDepth = settings.MaximumDepth;
 
+				if((settings.SerializationBehavior & SerializationBehavior.IgnoreNullValue) == SerializationBehavior.IgnoreNullValue)
+					result.NullValueHandling = NullValueHandling.Ignore;
+
 				if((settings.SerializationBehavior & SerializationBehavior.IgnoreDefaultValue) == SerializationBehavior.IgnoreDefaultValue)
 				{
-					result.DefaultValueHandling = DefaultValueHandling.Ignore;
 					result.NullValueHandling = NullValueHandling.Ignore;
+					result.DefaultValueHandling = DefaultValueHandling.Ignore;
 				}
 			}
 
