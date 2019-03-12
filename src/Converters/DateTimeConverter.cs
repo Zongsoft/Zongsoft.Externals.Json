@@ -34,7 +34,7 @@ namespace Zongsoft.Externals.Json.Converters
 	public class DateTimeConverter : IsoDateTimeConverter
 	{
 		#region 静态字段
-		private static readonly DateTime ORIGIN_UNIX_TIMESTAMP = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		private static readonly DateTime UNIX_TIMESTAMP_EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 		#endregion
 
 		#region 构造函数
@@ -75,9 +75,9 @@ namespace Zongsoft.Externals.Json.Converters
 				var number = System.Convert.ToDouble(reader.Value);
 
 				if(type == typeof(DateTimeOffset))
-					return ORIGIN_UNIX_TIMESTAMP.AddMilliseconds(number);
+					return UNIX_TIMESTAMP_EPOCH.AddMilliseconds(number);
 				else
-					return ORIGIN_UNIX_TIMESTAMP.AddMilliseconds(number).ToLocalTime();
+					return UNIX_TIMESTAMP_EPOCH.AddMilliseconds(number).ToLocalTime();
 			}
 			else if(reader.TokenType == JsonToken.String)
 			{
@@ -96,13 +96,13 @@ namespace Zongsoft.Externals.Json.Converters
 			{
 				if(value is DateTime)
 				{
-					var number = ((DateTime)value - ORIGIN_UNIX_TIMESTAMP.ToLocalTime()).TotalMilliseconds;
+					var number = ((DateTime)value - UNIX_TIMESTAMP_EPOCH.ToLocalTime()).TotalMilliseconds;
 					writer.WriteValue(number);
 					return;
 				}
 				else if(value is DateTimeOffset)
 				{
-					var number = ((DateTimeOffset)value - ORIGIN_UNIX_TIMESTAMP).TotalMilliseconds;
+					var number = ((DateTimeOffset)value - UNIX_TIMESTAMP_EPOCH).TotalMilliseconds;
 					writer.WriteValue(number);
 					return;
 				}

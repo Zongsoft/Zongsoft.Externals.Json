@@ -272,7 +272,7 @@ namespace Zongsoft.Externals.Json
 					{
 						var attribute = (SerializationMemberAttribute)attributes[0];
 
-						if(!string.IsNullOrEmpty(attribute.Name))
+						if(attribute.Name != null && attribute.Name.Length > 0)
 							property.PropertyName = attribute.Name;
 
 						property.Ignored = (attribute.Behavior == SerializationMemberBehavior.Ignored);
