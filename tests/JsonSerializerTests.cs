@@ -25,7 +25,7 @@ namespace Zongsoft.Externals.Json.Tests
 				PhoneNumber = "18912345678",
 				Birthdate = new DateTime(1979, 5, 15),
 				Grade = 0,
-				TotalPoints = Zongsoft.Common.RandomGenerator.GenerateInt32(),
+				TotalPoints = Zongsoft.Common.Randomizer.GenerateInt32(),
 				Description = "我是凹凸猫的一号员工！",
 			};
 
@@ -53,7 +53,7 @@ namespace Zongsoft.Externals.Json.Tests
 				Birthdate = DateTime.Now,
 				Principal = "001",
 				Grade = 0,
-				TotalPoints = Zongsoft.Common.RandomGenerator.GenerateInt32(),
+				TotalPoints = Zongsoft.Common.Randomizer.GenerateInt32(),
 				Description = "我是凹凸猫的一号员工！",
 			}, new TextSerializationSettings() { DateTimeFormat = "yyyy-MM-dd HH:mm:ss" });
 
