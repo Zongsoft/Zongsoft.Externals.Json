@@ -68,7 +68,7 @@ namespace Zongsoft.Externals.Json.Converters
 					return DateTime.MinValue;
 			}
 
-			Type type = (isNullable) ? Nullable.GetUnderlyingType(objectType) : objectType;
+			Type type = isNullable ? Nullable.GetUnderlyingType(objectType) : objectType;
 
 			if(reader.TokenType == JsonToken.Integer || reader.TokenType == JsonToken.Float)
 			{
