@@ -43,7 +43,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Converters\ObjectConverter.cs" />
     <Compile Include="Converters\ComponentTypeConverter.cs" />
     <Compile Include="JsonSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

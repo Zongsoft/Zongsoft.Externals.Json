@@ -32,7 +32,7 @@ using Newtonsoft.Json.Converters;
 
 namespace Zongsoft.Externals.Json.Converters
 {
-	public class ComponentTypeConverter : ExpandoObjectConverter
+	public class ComponentTypeConverter : JsonConverter
 	{
 		#region 成员字段
 		private TypeConverter _converter;
