@@ -30,6 +30,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.ComponentModel;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -266,7 +267,17 @@ namespace Zongsoft.Externals.Json
 
 				foreach(var property in properties)
 				{
-					var attributes = property.AttributeProvider.GetAttributes(typeof(SerializationMemberAttribute), true);
+					var attributes = property.AttributeProvider.GetAttributes(typeof(TypeConverterAttribute), true);
+
+					if(attributes != null && attributes.Count > 0)
+					{
+						var attribute = (TypeConverterAttribute)attributes[0];
+						var converter = Activator.CreateInstance(Type.GetType(attribute.ConverterTypeName)) as TypeConverter;
+
+						property.Converter = new Converters.ComponentTypeConverter(converter);
+					}
+
+					attributes = property.AttributeProvider.GetAttributes(typeof(SerializationMemberAttribute), true);
 
 					if(attributes != null && attributes.Count > 0)
 					{
@@ -293,7 +304,7 @@ namespace Zongsoft.Externals.Json
 
 							//如果成员绑定器支持值绑定转换
 							if(binder.GetMemberValueSupported)
-								property.ValueProvider = new ValueProvider(property.PropertyName, (container, value) => binder.GetMemberValue(property.PropertyName, container, value));
+								property.ValueProvider = new BindValueProvider(property.PropertyName, (container, value) => binder.GetMemberValue(property.PropertyName, container, value));
 
 							property.ShouldDeserialize = container =>
 							{
@@ -450,12 +461,12 @@ namespace Zongsoft.Externals.Json
 			#endregion
 
 			#region 嵌套子类
-			private class ValueProvider : IValueProvider
+			private class BindValueProvider : IValueProvider
 			{
 				private string _name;
 				private Func<object, object, object> _bind;
 
-				public ValueProvider(string name, Func<object, object, object> bind)
+				public BindValueProvider(string name, Func<object, object, object> bind)
 				{
 					_name = name;
 					_bind = bind;
@@ -492,15 +503,7 @@ namespace Zongsoft.Externals.Json
 					}
 					else
 					{
-						var members = target.GetType().GetMember(_name, MemberTypes.Property | MemberTypes.Field, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-						if(members != null && members.Length == 1)
-						{
-							if(members[0].MemberType == MemberTypes.Field)
-								((FieldInfo)members[0]).SetValue(target, boundValue);
-							else if(members[0].MemberType == MemberTypes.Property)
-								((PropertyInfo)members[0]).SetValue(target, boundValue);
-						}
+						Zongsoft.Reflection.Reflector.SetValue(ref target, _name, boundValue);
 					}
 				}
 
