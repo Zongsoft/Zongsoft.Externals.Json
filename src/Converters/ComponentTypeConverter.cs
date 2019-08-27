@@ -32,7 +32,7 @@ using Newtonsoft.Json.Converters;
 
 namespace Zongsoft.Externals.Json.Converters
 {
-	public class ComponentTypeConverter : JsonConverter
+	public class ComponentTypeConverter : ExpandoObjectConverter
 	{
 		#region 成员字段
 		private TypeConverter _converter;
@@ -62,22 +62,36 @@ namespace Zongsoft.Externals.Json.Converters
 
 		public override object ReadJson(JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
 		{
-			bool isNullable = objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(Nullable<>);
-
 			if(reader.TokenType == JsonToken.Null)
 			{
-				if(isNullable)
-					return null;
-				else
-					return DateTime.MinValue;
+				if(objectType.IsValueType)
+				{
+					bool isNullable = objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(Nullable<>);
+
+					if(!isNullable)
+						throw new System.Runtime.Serialization.SerializationException($"The {reader.Path} member cannot be set to null.");
+				}
+
+				return null;
 			}
 
-			Type type = isNullable ? Nullable.GetUnderlyingType(objectType) : objectType;
+			//默认为读取器当前值
+			var value = reader.Value;
 
-			if(_converter.CanConvertFrom(reader.ValueType))
-				return _converter.ConvertFrom(reader.Value);
+			//如果读取器的当前值类型为空，则表明它不是一个基元类型
+			if(reader.ValueType == null)
+				value = serializer.Deserialize(reader, objectType);
 
-			throw new System.Runtime.Serialization.SerializationException($"The {_converter.GetType()} type converter does not support converting {reader.Value} to {type} type.");
+			if(value != null)
+			{
+				if(objectType.IsAssignableFrom(value.GetType()))
+					return value;
+
+				if(_converter.CanConvertFrom(value.GetType()))
+					return _converter.ConvertFrom(value);
+			}
+
+			throw new System.Runtime.Serialization.SerializationException($"The {_converter.GetType()} type converter does not support converting {value} to {objectType} type.");
 		}
 
 		public override void WriteJson(JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer)
