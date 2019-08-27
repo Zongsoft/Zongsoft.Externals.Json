@@ -1,10 +1,12 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 
 using Xunit;
 
 using Zongsoft.Data;
 using Zongsoft.Runtime.Serialization;
+using System.Globalization;
 
 namespace Zongsoft.Externals.Json.Tests
 {
@@ -39,7 +41,7 @@ namespace Zongsoft.Externals.Json.Tests
 
 		#region 测试方法
 		[Fact]
-		public void SerializeTest()
+		public void TestSerialize()
 		{
 			JsonSerializer.Default.Settings.Indented = true;
 
@@ -92,7 +94,7 @@ namespace Zongsoft.Externals.Json.Tests
 		}
 
 		[Fact]
-		public void DeserializeTest()
+		public void TestDeserialize()
 		{
 			JsonSerializer.Default.Settings.Indented = true;
 			JsonSerializer.Default.Settings.NamingConvention = SerializationNamingConvention.Camel;
@@ -121,7 +123,24 @@ namespace Zongsoft.Externals.Json.Tests
 		}
 
 		[Fact]
-		public void DeserializeDepartmentTest()
+		public void TestDeserializeConverter()
+		{
+			var text = @"{
+""CredentialId"": ""X1234567890"",
+""Expiration"": 110}";
+
+			var credential = JsonSerializer.Default.Deserialize<CredentialToken>(text);
+
+			Assert.NotNull(credential);
+			Assert.Equal("X1234567890", credential.CredentialId);
+			Assert.True((credential.Expiration - DateTime.UtcNow).TotalSeconds > 100);
+
+			text = JsonSerializer.Default.Serialize(credential);
+			Assert.NotNull(text);
+		}
+
+		[Fact]
+		public void TestDeserializeDepartment()
 		{
 			var department = new Department
 			{
@@ -160,7 +179,7 @@ namespace Zongsoft.Externals.Json.Tests
 		}
 
 		[Fact]
-		public void DeserializeDictionaryTest()
+		public void TestDeserializeDictionary()
 		{
 			var text = @"{AssetId:100001, AssetNo:'A001', Projects:[{ProjectId:1},{ProjectId:3}], Creator:{UserId:100, Name:'Popeye'}}";
 			var dictionary = JsonSerializer.Default.Deserialize<Dictionary<string, object>>(text);
@@ -412,10 +431,63 @@ namespace Zongsoft.Externals.Json.Tests
 			#endregion
 		}
 
+		public class CredentialToken
+		{
+			public string CredentialId
+			{
+				get; set;
+			}
+
+			[TypeConverter(typeof(ExpirationConverter))]
+			public DateTime Expiration
+			{
+				get; set;
+			}
+		}
+
 		public enum Gender
 		{
 			Female = 0,
 			Male = 1,
+		}
+		#endregion
+
+		#region 类型转换
+		public class ExpirationConverter : TypeConverter, ISerializationConverter
+		{
+			public Type SerializationType
+			{
+				get => typeof(int);
+			}
+
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+			{
+				return Zongsoft.Common.TypeExtension.IsNumeric(sourceType);
+			}
+
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+			{
+				return destinationType == typeof(int) || destinationType == typeof(long);
+			}
+
+			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+			{
+				if(Zongsoft.Common.Convert.TryConvertValue<int>(value, out var number))
+					return DateTime.UtcNow.AddSeconds(number);
+
+				return base.ConvertFrom(context, culture, value);
+			}
+
+			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+			{
+				if(destinationType == typeof(int) || destinationType == typeof(long))
+				{
+					if(value is DateTime time)
+						return (long)(time.ToUniversalTime() - DateTime.UtcNow).TotalSeconds;
+				}
+
+				return base.ConvertTo(context, culture, value, destinationType);
+			}
 		}
 		#endregion
 	}
