@@ -377,7 +377,7 @@ namespace Zongsoft.Externals.Json
 				if(contract.CreatedType == typeof(object))
 					contract.DefaultCreator = () => new Dictionary<string, object>();
 				else if(contract.CreatedType.IsInterface)
-					contract.DefaultCreator = () => Zongsoft.Data.Entity.Build(contract.CreatedType);
+					contract.DefaultCreator = () => Zongsoft.Data.Model.Build(contract.CreatedType);
 				else
 				{
 					if(contract.CreatorParameters.Count > 0)

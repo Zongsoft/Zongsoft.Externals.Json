@@ -105,7 +105,7 @@ namespace Zongsoft.Externals.Json.Tests
 			var certification = JsonSerializer.Default.Deserialize<Zongsoft.Security.Credential>(text);
 			Assert.NotNull(certification);
 
-			var conditional = Zongsoft.Data.Entity.Build<IEmployeeConditional>();
+			var conditional = Zongsoft.Data.Model.Build<IEmployeeConditional>();
 			conditional.EmployeeNo = "A001";
 			conditional.Hiredate = new ConditionalRange<DateTime>(new DateTime(2010, 1, 1), DateTime.Today);
 			conditional.Leavedate = new ConditionalRange<DateTime>(new DateTime(2017, 1, 1), null);
