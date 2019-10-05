@@ -254,7 +254,7 @@ namespace Zongsoft.Externals.Json
 			protected override JsonObjectContract CreateObjectContract(Type type)
 			{
 				if(type.Assembly.IsDynamic)
-					type = GetEntityInterface(type);
+					type = GetModelPrototype(type);
 
 				var contract = base.CreateObjectContract(type);
 				this.SetObjectCreator(contract);
@@ -359,24 +359,29 @@ namespace Zongsoft.Externals.Json
 				return null;
 			}
 
-			private Type GetEntityInterface(Type type)
+			private Type GetModelPrototype(Type type)
 			{
-				var contracts = type.GetInterfaces();
-
-				foreach(var contract in contracts)
+				if(type.BaseType == null || type.BaseType == typeof(object))
 				{
-					if(contract.Name == "I" + type.Name)
-						return contract;
+					var contracts = type.GetInterfaces();
+
+					foreach(var contract in contracts)
+					{
+						if(type.FullName.StartsWith(contract.FullName))
+							return contract;
+					}
+
+					throw new System.Runtime.Serialization.SerializationException($"The entity interface of the '{type}' dynamic class implementation was not found and serialization was not supported.");
 				}
 
-				throw new System.Runtime.Serialization.SerializationException($"The entity interface of the '{type}' dynamic class implementation was not found and serialization was not supported.");
+				return type.BaseType;
 			}
 
 			private void SetObjectCreator(JsonObjectContract contract)
 			{
 				if(contract.CreatedType == typeof(object))
 					contract.DefaultCreator = () => new Dictionary<string, object>();
-				else if(contract.CreatedType.IsInterface)
+				else if(contract.CreatedType.IsAbstract)
 					contract.DefaultCreator = () => Zongsoft.Data.Model.Build(contract.CreatedType);
 				else
 				{
